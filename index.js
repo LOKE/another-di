@@ -1,4 +1,3 @@
-var annotate = require('fn-annotate');
 var path = require('path');
 
 function dashToCamel(str) {
@@ -12,12 +11,11 @@ var TYPE_TRANSIENT = 'transient';
 // var TYPE_INTERFACE = 'interface';
 
 
-function  ServiceMeta(type, ctor) {
+function ServiceMeta(type, ctor) {
   if (typeof ctor !== 'function') throw new Error('ctor must be a function');
 
   this.type = type;
   this.ctor = ctor;
-  this.depNames = annotate(ctor) || [];
   this.instance = null;
   this.building = false;
 }
@@ -27,19 +25,18 @@ function Container(_require) {
   this._services = {};
 }
 
-Container.prototype._createInstance = function (service) {
+Container.prototype._createInstance = function (service, proxy) {
   if (service.building) throw new Error('circular dep!');
   service.building = true;
 
-  var deps = this._getServices(service.depNames);
-  var instance = service.ctor.apply(undefined, deps);
+  var instance = service.ctor(proxy);
 
   service.building = false;
 
   return instance;
 };
 
-Container.prototype._getService = function (name) {
+Container.prototype._getService = function (name, proxy) {
   if (name === 'ioc') return this;
   if (!this._services[name]) throw new Error('service ' + name +' not defined');
 
@@ -49,20 +46,13 @@ Container.prototype._getService = function (name) {
     return service.instance;
   }
 
-  var instance = this._createInstance(service);
+  var instance = this._createInstance(service, proxy);
 
   if (service.type === TYPE_SINGLETON) {
     service.instance = instance;
   }
 
   return instance;
-};
-
-Container.prototype._getServices = function (names, locals) {
-  return names.map(function (name) {
-    if (locals && locals[name]) return locals[name];
-    return this._getService(name);
-  }.bind(this));
 };
 
 Container.prototype.register = function (name, type, ctor) {
@@ -114,18 +104,15 @@ Container.prototype.run = function (func, locals) {
 
   this._hasRun = true;
 
-  var depNames = annotate(func)
-  .map(function (name) {
-    // remove leading underscore, usefull in tests
-    // .run(_service => {
-    //   service = _service;
-    // })
-    return name.replace(/^_/, '');
+  var proxy = new Proxy(locals || {}, {
+      get: (target, name) => {
+        name in target ?
+            target[name] :
+            this._getService(name.replace(/^_/, ''), proxy)
+      }
   });
 
-  var deps = this._getServices(depNames, locals);
-
-  return func.apply(undefined, deps);
+  return func(proxy);
 };
 
 Container.prototype.clone = function () {

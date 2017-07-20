@@ -3,15 +3,15 @@ var assert = require('assert');
 
 var ioc = di.create();
 
-ioc.singleton('a', function (b, c) {
+ioc.singleton('a', function ({b, c}) {
   return 'A';
 });
 
-ioc.singleton('b', function (d, c) {
+ioc.singleton('b', function ({d, c}) {
   return 'B';
 });
 
-ioc.singleton('c', function (d) {
+ioc.singleton('c', function ({d}) {
   return 'C';
 });
 
@@ -21,7 +21,7 @@ ioc.transient('d', function () {
 
 var copy = ioc.clone();
 
-copy.run(function (a, b, c, d) {
+copy.run(function ({a, b, c, d}) {
   assert.equal(a, 'A');
   assert.equal(b, 'B');
   assert.equal(c, 'C');
@@ -32,11 +32,11 @@ copy.run(function (a, b, c, d) {
 
 var circular = di.create();
 
-circular.singleton('a', function (b) {});
-circular.singleton('b', function (a) {});
+circular.singleton('a', function ({b}) {});
+circular.singleton('b', function ({a}) {});
 
 assert.throws(function () {
-  circular.run(function (a) {});
+  circular.run(function ({a}) {});
 });
 
 // should fail to register dep after run
@@ -44,8 +44,16 @@ assert.throws(function () {
 var doublerun = di.create();
 
 doublerun.singleton('a', function () {});
-doublerun.run(function (a) {})
+doublerun.run(function ({a}) {})
 
 assert.throws(function () {
   doublerun.singleton('b', function () {});
 });
+
+var perReq = di.create();
+
+perReq.run(deps => {
+  ioc.run(things => {
+
+  }, deps)
+})
