@@ -105,11 +105,10 @@ Container.prototype.run = function (func, locals) {
   this._hasRun = true;
 
   var proxy = new Proxy(locals || {}, {
-      get: (target, name) => {
+      get: (target, name) =>
         name in target ?
             target[name] :
             this._getService(name.replace(/^_/, ''), proxy)
-      }
   });
 
   return func(proxy);
