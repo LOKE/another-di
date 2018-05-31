@@ -8,10 +8,6 @@
   },
   "author": "Dominic Smith <code@smithamax.me>",
   "license": "MIT",
-  "dependencies": {
-    "fn-annotate": "^1.1.1"
-  },
-  "devDependencies": {},
   "keywords": [
     "di"
   ]
