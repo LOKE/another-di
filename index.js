@@ -1,4 +1,5 @@
 const path = require('path');
+const { Counter } = require('prom-client');
 
 const TYPE_SINGLETON = 'singleton';
 const TYPE_TRANSIENT = 'transient';
@@ -14,6 +15,12 @@ function ServiceMeta(type, ctor) {
   this.building = false;
 }
 
+const serviceCount = new Counter({
+  name: 'another_di_services_total',
+  help: 'Total number of services constructed',
+  labelNames: ['service'],
+  registers: []
+});
 
 class Container {
   constructor() {
@@ -28,6 +35,7 @@ class Container {
     }
 
     this._services[name] = new ServiceMeta(type, ctor);
+    serviceCount.inc({ service: name }, 0);
 
     return this;
   }
@@ -107,6 +115,7 @@ class Container {
     }
 
     const instance = this._createInstance(service, proxy);
+    serviceCount.inc({ service: name });
 
     if (service.type === TYPE_SINGLETON) {
       service.instance = instance;
@@ -120,3 +129,6 @@ exports.create = function () {
   return new Container();
 };
 
+exports.registerMetrics = registry => {
+  registry.registerMetric(serviceCount);
+};

@@ -10,5 +10,8 @@
   "license": "MIT",
   "keywords": [
     "di"
-  ]
+  ],
+  "dependencies": {
+    "prom-client": "^11.0.0"
+  }
 }
