@@ -13,7 +13,7 @@ module.exports = function () {
 
 // lib/boomer.js
 
-module.exports = function (helloMessage) {
+module.exports = function ({helloMessage}) {
   return {
     boom: function () {
       console.log(helloMessage);
@@ -33,7 +33,7 @@ module.exports = di.create(require)
 
 var lib = require('./lib');
 
-lib.run(function (boomer) {
+lib.run(function ({boomer}) {
   boomer.boom(); // logs out 'hello world'
 });
 
@@ -49,7 +49,7 @@ beforeEach(function () {
     return 'hello from test land';
   });
 
-  testContainer.run(function (_boomer) { // underscore is striped before dependency lookup
+  testContainer.run(function ({_boomer}) { // underscore is striped before dependency lookup
     boomer = _boomer;
   })
 })
