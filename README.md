@@ -25,9 +25,9 @@ module.exports = function ({helloMessage}) {
 
 var di = require('another-di');
 
-module.exports = di.create(require)
-.singleton('./hello-message') // dashes converted to camelcase
-.singleton('./boomer')
+module.exports = di.create()
+.singleton('helloMessage', require('./hello-message')) // dashes converted to camelcase
+.singleton('boomer', require('./boomer'))
 
 // main.js
 
