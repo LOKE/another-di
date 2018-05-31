@@ -1,4 +1,3 @@
-const path = require('path');
 const { Counter } = require('prom-client');
 
 const TYPE_SINGLETON = 'singleton';
